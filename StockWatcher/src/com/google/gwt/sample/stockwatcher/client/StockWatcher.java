@@ -5,6 +5,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -38,8 +39,9 @@ public class StockWatcher implements EntryPoint{
 		mainPanel.add(lastUpsdatedLabel	);
 		
 		//Associate Main panel with the HTML host page
+		RootPanel.get("stockList").add(mainPanel);
 		
-		
-		//TODO Move cursor focus to input box
+		//Move cursor focus to input box
+		newSymbolTextBox.setFocus(true);
 	}
 }
