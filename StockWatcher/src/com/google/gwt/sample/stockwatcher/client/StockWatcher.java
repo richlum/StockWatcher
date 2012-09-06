@@ -1,6 +1,7 @@
 package com.google.gwt.sample.stockwatcher.client;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -8,6 +9,10 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.NumberFormat;
+import com.google.gwt.user.client.Random;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -18,13 +23,13 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class StockWatcher implements EntryPoint{
-	
+	private final int REFRESH_INTERVAL =  2000; //ms
 	private VerticalPanel mainPanel = new VerticalPanel();
 	private FlexTable stocksFlexTable = new FlexTable();
 	private HorizontalPanel addPanel = new HorizontalPanel();
 	private TextBox newSymbolTextBox = new TextBox();
 	private Button addStockButton = new Button("Add");
-	private Label lastUpsdatedLabel = new Label();
+	private Label lastUpdatedLabel = new Label();
 	private ArrayList<String> stocks = new ArrayList<String>();
 	
 	/**
@@ -45,7 +50,7 @@ public class StockWatcher implements EntryPoint{
 		//Assemble Main Panel
 		mainPanel.add(stocksFlexTable);
 		mainPanel.add(addPanel);
-		mainPanel.add(lastUpsdatedLabel	);
+		mainPanel.add(lastUpdatedLabel	);
 		
 		//Associate Main panel with the HTML host page
 		RootPanel.get("stockList").add(mainPanel);
@@ -72,6 +77,18 @@ public class StockWatcher implements EntryPoint{
 			}
 			
 		});
+	
+		// setup timer for refreshing prices
+		Timer refreshTimer = new Timer(){
+
+			@Override
+			public void run() {
+				refreshWatchList();
+				
+			}
+			
+		};
+		refreshTimer.scheduleRepeating(REFRESH_INTERVAL);
 		
 	}
 
@@ -113,6 +130,50 @@ public class StockWatcher implements EntryPoint{
 		stocksFlexTable.setWidget(row, 3, removeStockButton);
 		
 		// get stock price
+		refreshWatchList();
+	}
+
+	private void refreshWatchList() {
+		final double MAX_PRICE = 100.00;
+		final double MAX_PRICE_CHANGE = 0.02;
+		
+		StockPrice[] prices = new StockPrice[stocks.size()];
+		for (int i=0; i<stocks.size();i++){
+			double price = Random.nextDouble() * MAX_PRICE;
+			double change = price * MAX_PRICE_CHANGE * 
+					(Random.nextDouble() *2.0 - 1.0);
+			prices[i] = new StockPrice(stocks.get(i), price, change);
+			
+		}
+		
+		updateTable(prices);
+		
+	}
+
+	@SuppressWarnings("deprecation")
+	private void updateTable(StockPrice[] prices) {
+		for (int i=0;i<prices.length;i++){
+			updateTable(prices[i]);
+		}
+		
+		lastUpdatedLabel.setText("Last update : " +
+				DateTimeFormat.getMediumDateTimeFormat().format(new Date()));
+		
+	}
+
+	private void updateTable(StockPrice stockPrice) {
+		if (!stocks.contains(stockPrice.getSymbol())){
+			return;
+		}
+		
+		int row = stocks.indexOf(stockPrice.getSymbol())+1;
+		
+		String priceText = NumberFormat.getFormat("#,##0.00").format(stockPrice.getPrice());
+		NumberFormat changeFormat = NumberFormat.getFormat("+#,##0.00;-#,##0.00");
+		String changePercentText = changeFormat.format(stockPrice.getChange());
+		
+		stocksFlexTable.setText(row, 1, priceText);
+		stocksFlexTable.setText(row, 2, changePercentText + " (" + changePercentText + "%)");
 		
 	}
 	
