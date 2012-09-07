@@ -22,6 +22,9 @@ public class StockPrice {
 	public void setPrice(double price) {
 		this.price = price;
 	}
+	public double getChangePercent() {
+		return 100.0*change;
+	}
 	public double getChange() {
 		return change;
 	}

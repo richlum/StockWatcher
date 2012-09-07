@@ -170,10 +170,11 @@ public class StockWatcher implements EntryPoint{
 		
 		String priceText = NumberFormat.getFormat("#,##0.00").format(stockPrice.getPrice());
 		NumberFormat changeFormat = NumberFormat.getFormat("+#,##0.00;-#,##0.00");
-		String changePercentText = changeFormat.format(stockPrice.getChange());
+		String changeText = changeFormat.format(stockPrice.getChange());
+		String changePercentText = changeFormat.format(stockPrice.getChangePercent()/stockPrice.getPrice());
 		
 		stocksFlexTable.setText(row, 1, priceText);
-		stocksFlexTable.setText(row, 2, changePercentText + " (" + changePercentText + "%)");
+		stocksFlexTable.setText(row, 2, changeText + " (" + changePercentText + "%)");
 		
 	}
 	
