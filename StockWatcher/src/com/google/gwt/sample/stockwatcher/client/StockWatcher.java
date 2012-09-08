@@ -81,7 +81,9 @@ public class StockWatcher implements EntryPoint{
 
 			@Override
 			public void onKeyPress(KeyPressEvent event) {
-				if(event.getCharCode() == KeyCodes.KEY_ENTER){
+				// fix for return on linux, get real keycode, not getChar
+				int keycode = event.getNativeEvent().getKeyCode();
+				if(keycode == KeyCodes.KEY_ENTER){
 					addStock();
 				}
 				
