@@ -41,6 +41,8 @@ public class StockWatcher implements EntryPoint{
 	private Label loginLabel = new Label("Sign in to your GOOG account to access StockWatcher Application");
 	private Anchor signInLink = new Anchor("Sign In");
 	private Anchor signOutLink = new Anchor("Sign Out");
+	private Label userName = new Label("unknown");
+	private final StockServiceAsync stockService = GWT.create(StockService.class);
 	/**
 	 * Entry point method
 	 */
@@ -50,8 +52,7 @@ public class StockWatcher implements EntryPoint{
 		loginService.login(GWT.getHostPageBaseURL(), new AsyncCallback<LoginInfo>(){
 			@Override
 			public void onFailure(Throwable caught) {
-				// TODO Auto-generated method stub
-				
+				 handleError(caught);
 			}
 
 			public void onSuccess(LoginInfo result) {
@@ -59,6 +60,7 @@ public class StockWatcher implements EntryPoint{
 				loginInfo = result;
 				if(loginInfo.isLoggedIn()){
 					System.out.println("user: \"" +  loginInfo.getNickname() + "\"  is logged in, loading stockwatcher");
+					userName.setText(loginInfo.getNickname());
 					loadStockWatcher();
 				}else{
 					System.out.println("user not logged in, loading login page");
@@ -96,6 +98,8 @@ public class StockWatcher implements EntryPoint{
 	    stocksFlexTable.getCellFormatter().addStyleName(0, 2, "watchListNumericColumn");
 	    stocksFlexTable.getCellFormatter().addStyleName(0, 3, "watchListRemoveColumn");
 	    
+	    loadStocks();
+	    
 		//Assemble Add Stock panel
 		addPanel.add(addStockButton);
 		addPanel.add(newSymbolTextBox);
@@ -103,6 +107,7 @@ public class StockWatcher implements EntryPoint{
 		
 		//Assemble Main Panel
 		mainPanel.add(signOutLink);
+		mainPanel.add(userName);
 		mainPanel.add(stocksFlexTable);
 		mainPanel.add(addPanel);
 		mainPanel.add(lastUpdatedLabel	);
@@ -150,8 +155,25 @@ public class StockWatcher implements EntryPoint{
 		refreshTimer.scheduleRepeating(REFRESH_INTERVAL);
 	}
 
+	private void loadStocks() {
+		stockService.getStocks(new AsyncCallback<String[]>() {
+        public void onFailure(Throwable error) {
+        	handleError(error);
+        }
+        public void onSuccess(String[] symbols) {
+          displayStocks(symbols);
+        }
+      });
+    }
+
+
+	protected void displayStocks(String[] symbols) {
+		for (String symbol : symbols) {
+	      displayStock(symbol);
+	    }
+	}
+
 	protected void addStock() {
-		// TODO Auto-generated method stub
 		final String symbol = newSymbolTextBox.getText().toUpperCase().trim();
 		newSymbolTextBox.setFocus(true);
 		
@@ -167,6 +189,24 @@ public class StockWatcher implements EntryPoint{
 		if (stocks.contains(symbol))
 			return;
 		
+		//displayStock(symbol);
+		addStock(symbol);
+	}
+
+	
+	
+	private void addStock(final String symbol) {
+		stockService.addStock(symbol, new AsyncCallback<Void>() {
+	        public void onFailure(Throwable error) {
+	        	handleError(error);
+	        }
+	        public void onSuccess(Void ignore) {
+	          displayStock(symbol);
+	        }
+		});
+    }
+
+	private void displayStock(final String symbol) {
 		// add stock
 		int row = stocksFlexTable.getRowCount();
 		stocks.add(symbol);
@@ -184,19 +224,35 @@ public class StockWatcher implements EntryPoint{
 
 			@Override
 			public void onClick(ClickEvent event) {
-				int removedIndex = stocks.indexOf(symbol);
-				stocks.remove(removedIndex);
-				stocksFlexTable.removeRow(removedIndex+1);
 				
+				removeStock(symbol);
 			}
 			
 		});
-		stocksFlexTable.setWidget(row, 3, removeStockButton);
 		
+		stocksFlexTable.setWidget(row, 3, removeStockButton);
 		// get stock price
 		refreshWatchList();
 	}
+	
+	protected void removeStock(final String symbol) {
+		stockService.removeStock(symbol, new AsyncCallback<Void>() {
+	        public void onFailure(Throwable error) {
+	        	handleError(error);
+	        }
+	        public void onSuccess(Void ignore) {
+	          undisplayStock(symbol);
+	        }
+	    });
+	}
 
+	
+	private void undisplayStock(final String symbol) {
+		int removedIndex = stocks.indexOf(symbol);
+		stocks.remove(removedIndex);
+		stocksFlexTable.removeRow(removedIndex+1);
+	}
+	
 	private void refreshWatchList() {
 		final double MAX_PRICE = 100.00;
 		final double MAX_PRICE_CHANGE = 0.02;
@@ -255,6 +311,11 @@ public class StockWatcher implements EntryPoint{
 	    changeWidget.setStyleName(changeStyleName);
 	}
 	
-	
+	private void handleError(Throwable error) {
+	    Window.alert(error.getMessage());
+	    if (error instanceof NotLoggedInException) {
+	      Window.Location.replace(loginInfo.getLogoutUrl());
+	    }
+	}
 	
 }
