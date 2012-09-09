@@ -27,7 +27,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class StockWatcher implements EntryPoint{
 	// stockwatcher items
-	private final int REFRESH_INTERVAL =  2000; //ms
+	private final int REFRESH_INTERVAL =  3000; //ms
 	private VerticalPanel mainPanel = new VerticalPanel();
 	private FlexTable stocksFlexTable = new FlexTable();
 	private HorizontalPanel addPanel = new HorizontalPanel();
@@ -58,8 +58,10 @@ public class StockWatcher implements EntryPoint{
 				
 				loginInfo = result;
 				if(loginInfo.isLoggedIn()){
+					System.out.println("user: \"" +  loginInfo.getNickname() + "\"  is logged in, loading stockwatcher");
 					loadStockWatcher();
 				}else{
+					System.out.println("user not logged in, loading login page");
 					loadLogin();
 				}
 			}
@@ -126,6 +128,7 @@ public class StockWatcher implements EntryPoint{
 			public void onKeyPress(KeyPressEvent event) {
 				// fix for return on linux, get real keycode, not getChar
 				int keycode = event.getNativeEvent().getKeyCode();
+				System.out.println("keypress " + event.getCharCode() + ": " + keycode);
 				if(keycode == KeyCodes.KEY_ENTER){
 					addStock();
 				}
