@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -14,6 +15,8 @@ import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.user.client.Random;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HorizontalPanel;
@@ -23,6 +26,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class StockWatcher implements EntryPoint{
+	// stockwatcher items
 	private final int REFRESH_INTERVAL =  2000; //ms
 	private VerticalPanel mainPanel = new VerticalPanel();
 	private FlexTable stocksFlexTable = new FlexTable();
@@ -31,12 +35,49 @@ public class StockWatcher implements EntryPoint{
 	private Button addStockButton = new Button("Add");
 	private Label lastUpdatedLabel = new Label();
 	private ArrayList<String> stocks = new ArrayList<String>();
-	
+	//login items
+	private LoginInfo loginInfo = null;
+	private VerticalPanel loginPanel = new VerticalPanel();
+	private Label loginLabel = new Label("Sign in to your GOOG account to access StockWatcher Application");
+	private Anchor signInLink = new Anchor("Sign In");
+	private Anchor signOutLink = new Anchor("Sign Out");
 	/**
 	 * Entry point method
 	 */
 	
 	public void onModuleLoad(){
+		LoginServiceAsync loginService = GWT.create(LoginService.class);
+		loginService.login(GWT.getHostPageBaseURL(), new AsyncCallback<LoginInfo>(){
+			@Override
+			public void onFailure(Throwable caught) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			public void onSuccess(LoginInfo result) {
+				
+				loginInfo = result;
+				if(loginInfo.isLoggedIn()){
+					loadStockWatcher();
+				}else{
+					loadLogin();
+				}
+			}
+		});
+	}
+
+	protected void loadLogin() {
+		signInLink.setHref(loginInfo.getLoginUrl());
+		loginPanel.add(loginLabel);
+		loginPanel.add(signInLink);
+		RootPanel.get("stockList").add(loginPanel);
+		
+		
+	}
+
+	private void loadStockWatcher() {
+		// set up signout link
+		signOutLink.setHref(loginInfo.getLogoutUrl());
 		//create table for stock data
 		stocksFlexTable.setText(0, 0, "Symbol");
 		stocksFlexTable.setText(0, 1, "Price");
@@ -59,9 +100,11 @@ public class StockWatcher implements EntryPoint{
 		addPanel.addStyleName("addPanel");
 		
 		//Assemble Main Panel
+		mainPanel.add(signOutLink);
 		mainPanel.add(stocksFlexTable);
 		mainPanel.add(addPanel);
 		mainPanel.add(lastUpdatedLabel	);
+
 		
 		//Associate Main panel with the HTML host page
 		RootPanel.get("stockList").add(mainPanel);
@@ -102,7 +145,6 @@ public class StockWatcher implements EntryPoint{
 			
 		};
 		refreshTimer.scheduleRepeating(REFRESH_INTERVAL);
-		
 	}
 
 	protected void addStock() {
