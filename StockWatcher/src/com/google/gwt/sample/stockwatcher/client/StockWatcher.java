@@ -82,7 +82,9 @@ public class StockWatcher implements EntryPoint{
 	private void loadStockWatcher() {
 		// set up signout link
 		signOutLink.setHref(loginInfo.getLogoutUrl());
+		signOutLink.setVisible(true);
 		//create table for stock data
+		
 		stocksFlexTable.setText(0, 0, "Symbol");
 		stocksFlexTable.setText(0, 1, "Price");
 		stocksFlexTable.setText(0, 2, "Change");

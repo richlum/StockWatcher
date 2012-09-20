@@ -26,6 +26,16 @@
     <script type="text/javascript" language="javascript" src="stockwatcher/stockwatcher.nocache.js"></script>
   </head>
 
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  		var js, fjs = d.getElementsByTagName(s)[0];
+  		if (d.getElementById(id)) return;
+  		js = d.createElement(s); js.id = id;
+  		js.src = "//connect.facebook.net/en_GB/all.js#xfbml=1";
+  		fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));</script>
+
   <!--                                           -->
   <!-- The body can have arbitrary html, or      -->
   <!-- you can leave the body empty if you want  -->
@@ -36,6 +46,18 @@
 	<h1>StockWatch</h1>
 	<div id="stockList"></div>
 
+
+	<script type="text/javascript">
+  		(function() {
+    		var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+    		po.src = 'https://apis.google.com/js/plusone.js';
+    		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+  		})();
+	</script>
+
+	<div class="g-plusone" data-annotation="inline" data-width="300"></div>
+	<div class="fb-like" data-href="http://run-run-run.appspot.com" data-send="true" data-width="450" data-show-faces="true"></div>
+    
     <!-- OPTIONAL: include this if you want history support -->
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position:absolute;width:0;height:0;border:0"></iframe>
     

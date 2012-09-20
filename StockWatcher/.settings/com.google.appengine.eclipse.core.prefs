@@ -6,3 +6,4 @@ gaeHrdEnabled=true
 gaeIsEclipseDefaultInstPath=true
 googleCloudSqlEnabled=false
 localDevMySqlEnabled=true
+ormEnhancementInclusions=src/com/google/gwt/sample/stockwatcher/server/Stock.java|test/
