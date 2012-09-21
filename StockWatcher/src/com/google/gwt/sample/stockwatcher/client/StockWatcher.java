@@ -1,5 +1,12 @@
 package com.google.gwt.sample.stockwatcher.client;
 
+import com.google.code.gwt.geolocation.client.Coordinates;
+import com.google.code.gwt.geolocation.client.Geolocation;
+import com.google.code.gwt.geolocation.client.Position;
+import com.google.code.gwt.geolocation.client.PositionCallback;
+import com.google.code.gwt.geolocation.client.PositionError;
+import com.google.code.gwt.geolocation.client.PositionOptions;
+
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -42,6 +49,9 @@ public class StockWatcher implements EntryPoint{
 	private Anchor signInLink = new Anchor("Sign In");
 	private Anchor signOutLink = new Anchor("Sign Out");
 	private Label userName = new Label("unknown");
+	
+	private VerticalPanel geolocationPanel = new VerticalPanel();
+	
 	private final StockServiceAsync stockService = GWT.create(StockService.class);
 	/**
 	 * Entry point method
@@ -120,6 +130,25 @@ public class StockWatcher implements EntryPoint{
 		
 		//Move cursor focus to input box
 		newSymbolTextBox.setFocus(true);
+	
+		//test geolocation handler
+		mainPanel.add(geolocationPanel);
+		geolocationPanel.add(new Label("Geolocation provider: " + Geolocation.getProviderName()));
+		geolocationPanel.add(new Label("GWT strongname: " + GWT.getPermutationStrongName()));
+		
+		Label l1 = new Label("Obtaining Geolocation...");
+		geolocationPanel.add(l1);
+		if (!Geolocation.isSupported()) {
+		      l1.setText("Obtaining Geolocation FAILED! Geolocation API is not supported.");
+		      return;
+		}
+		final Geolocation geo = Geolocation.getGeolocation();
+		if (geo == null) {
+		l1.setText("Obtaining Geolocation FAILED! Object is null.");
+		      return;
+		}
+		l1.setText("Obtaining Geolocation DONE!");
+		obtainPosition(geolocationPanel, geo);
 		
 		//Listen for mouse events on add button
 		addStockButton.addClickHandler(new ClickHandler(){
@@ -127,6 +156,9 @@ public class StockWatcher implements EntryPoint{
 				addStock();
 			}
 		});
+		
+		
+		
 		
 		//Listen for keyboard
 		newSymbolTextBox.addKeyPressHandler(new KeyPressHandler(){
@@ -156,6 +188,57 @@ public class StockWatcher implements EntryPoint{
 		};
 		refreshTimer.scheduleRepeating(REFRESH_INTERVAL);
 	}
+
+	private void obtainPosition(final VerticalPanel geolocationPanel2,
+			Geolocation geo) {
+		final Label l2 = new Label("Obtaining position (timeout: 15 sec)...");
+		geolocationPanel2.add(l2);
+
+		geo.getCurrentPosition(new PositionCallback() {
+			public void onFailure(PositionError error) {
+				String message = "";
+				switch (error.getCode()) {
+				case PositionError.UNKNOWN_ERROR:
+					message = "Unknown Error";
+					break;
+				case PositionError.PERMISSION_DENIED:
+					message = "Permission Denied";
+					break;
+				case PositionError.POSITION_UNAVAILABLE:
+					message = "Position Unavailable";
+					break;
+				case PositionError.TIMEOUT:
+					message = "Time-out";
+					break;
+				default:
+					message = "Unknown error code.";
+				}
+				l2.setText("Obtaining position FAILED! Message: '"
+						+ error.getMessage() + "', code: " + error.getCode()
+						+ " (" + message + ")");
+			}
+
+			public void onSuccess(Position position) {
+				l2.setText("Obtaining position DONE:");
+				Coordinates c = position.getCoords();
+				geolocationPanel2.add(new Label("lat, lon: " + c.getLatitude()
+						+ ", " + c.getLongitude()));
+				geolocationPanel2.add(new Label("Accuracy (in meters): "
+						+ c.getAccuracy()));
+				geolocationPanel2.add(new Label("Altitude: "
+						+ (c.hasAltitude() ? c.getAltitude() : "[no value]")));
+				geolocationPanel2
+						.add(new Label("Altitude accuracy (in meters): "
+								+ (c.hasAltitudeAccuracy() ? c
+										.getAltitudeAccuracy() : "[no value]")));
+				geolocationPanel2.add(new Label("Heading: "
+						+ (c.hasHeading() ? c.getHeading() : "[no value]")));
+				geolocationPanel2.add(new Label("Speed: "
+						+ (c.hasSpeed() ? c.getSpeed() : "[no value]")));
+			}
+		}, PositionOptions.getPositionOptions(false, 15000, 30000));
+	}
+		
 
 	private void loadStocks() {
 		stockService.getStocks(new AsyncCallback<String[]>() {
