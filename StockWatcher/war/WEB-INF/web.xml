@@ -15,6 +15,15 @@
     	<servlet-class>com.google.gwt.sample.stockwatcher.server.StockServiceImpl</servlet-class>
   	</servlet>
 	
+  <servlet>
+    <servlet-name>stockPriceServiceImpl</servlet-name>
+    <servlet-class>com.google.gwt.sample.stockwatcher.server.StockPriceServiceImpl</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>stockPriceServiceImpl</servlet-name>
+    <url-pattern>/stockwatcher/stockPrices</url-pattern>
+  </servlet-mapping>
 	
 	
 	<servlet-mapping>

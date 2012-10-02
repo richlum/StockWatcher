@@ -1,9 +1,20 @@
 package com.google.gwt.sample.stockwatcher.client;
 
-public class StockPrice {
+import java.io.Serializable;
+
+
+
+public class StockPrice  implements Serializable {
+
 	private String symbol;
 	private double price;
 	private double change;
+	// required no arg constructor for gwt rpc compile
+	//   uninitialized private members ok?
+	public StockPrice() {
+
+	}
+	
 	
 	public StockPrice(String string, double price2, double change2) {
 		this.symbol = string;
