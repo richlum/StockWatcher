@@ -224,6 +224,48 @@ function stockwatcher(){
     }
   }
 
+  providers['geolocation.api'] = function(){
+    if (typeof navigator.geolocation != 'undefined' && typeof navigator.geolocation.getCurrentPosition == 'function') {
+      return 'html5';
+    }
+    if (window.google && google.gears) {
+      return 'gears';
+    }
+    var factory = null;
+    if (typeof GearsFactory != 'undefined') {
+      factory = new GearsFactory;
+    }
+     else {
+      try {
+        factory = new ActiveXObject('Gears.Factory');
+        if (factory.getBuildInfo().indexOf('ie_mobile') != -1) {
+          factory.privateSetGlobalObject(this);
+        }
+      }
+       catch (e) {
+        if (typeof navigator.mimeTypes != 'undefined' && navigator.mimeTypes['application/x-googlegears']) {
+          factory = document.createElement('object');
+          factory.style.display = 'none';
+          factory.width = 0;
+          factory.height = 0;
+          factory.type = 'application/x-googlegears';
+          document.documentElement.appendChild(factory);
+        }
+      }
+    }
+    if (!factory) {
+      return 'html5';
+    }
+    if (!window.google) {
+      google = {};
+    }
+    if (!google.gears) {
+      google.gears = {factory:factory};
+    }
+    return 'gears';
+  }
+  ;
+  values['geolocation.api'] = {gears:0, html5:1};
   providers['user.agent'] = function(){
     var ua = navigator.userAgent.toLowerCase();
     var makeVersion = function(result){
@@ -311,13 +353,19 @@ function stockwatcher(){
   $stats && $stats({moduleName:'stockwatcher', sessionId:$sessionId_0, subSystem:'startup', evtGroup:'bootstrap', millis:(new Date).getTime(), type:'selectingPermutation'});
   if (!isHostedMode()) {
     try {
-      unflattenKeylistIntoAnswers(['ie8'], '31179F36EB4AAA1ED74396ADD318CC3A');
-      unflattenKeylistIntoAnswers(['ie6'], '45707B6694784E354373C0AB473EE050');
-      unflattenKeylistIntoAnswers(['safari'], '9D8A119F8FD3A4BBBF11793DE0261016');
-      unflattenKeylistIntoAnswers(['opera'], 'BAA6D1481E9B0234D41F30AB53DB991C');
-      unflattenKeylistIntoAnswers(['ie9'], 'C739F405DBBEDFE01CA90AC0E827C4B9');
-      unflattenKeylistIntoAnswers(['gecko1_8'], 'EB97D052ACE8506D30261F23D0133250');
-      strongName = answers[computePropValue('user.agent')];
+      unflattenKeylistIntoAnswers(['gears', 'ie6'], '248524AC708E78E451FC8C7DCFB8F4B0');
+      unflattenKeylistIntoAnswers(['html5', 'opera'], '36FEFE84AAC98CD0CEA701B534C14A64');
+      unflattenKeylistIntoAnswers(['gears', 'gecko1_8'], '3FD63EF0E6ABF3504CEEA8BA82467A6B');
+      unflattenKeylistIntoAnswers(['html5', 'ie9'], '63E716DF912E03DCA0BFBC1B583D3479');
+      unflattenKeylistIntoAnswers(['html5', 'safari'], '7F8B8D450F089FAF84F0DEAA36850AEC');
+      unflattenKeylistIntoAnswers(['gears', 'opera'], '8218F7EF47EE87A4375669DF6A39D391');
+      unflattenKeylistIntoAnswers(['gears', 'safari'], '842F16C151CA4D2743DFD1C739FE0865');
+      unflattenKeylistIntoAnswers(['html5', 'gecko1_8'], '96540F2216B9CF021DBD7878F8C3E66D');
+      unflattenKeylistIntoAnswers(['gears', 'ie8'], 'A8A45E7C78C175E768BA09515E61D271');
+      unflattenKeylistIntoAnswers(['html5', 'ie8'], 'B3348D0A086773B6E517BB0DBF3F4474');
+      unflattenKeylistIntoAnswers(['html5', 'ie6'], 'D687F95F365693685846FDDAC75E13EC');
+      unflattenKeylistIntoAnswers(['gears', 'ie9'], 'F732AB67153E93D30DE8971FE3310F1A');
+      strongName = answers[computePropValue('geolocation.api')][computePropValue('user.agent')];
       var idx = strongName.indexOf(':');
       if (idx != -1) {
         softPermutationId = Number(strongName.substring(idx + 1));
